@@ -1,2 +1,3 @@
-# yarl
-public files from 'yet another rigging library'
+# YARL for all y'all!
+'yet another rigging library'- public files 
+WIP
