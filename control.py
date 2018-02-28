@@ -14,7 +14,7 @@ class Control():
                 self,
                 prefix = 'new',
                 suffix = '_ctl',
-                curveShape = 'circleX',
+                curveShape = 'squareZ',
                 rotateShape = [0,90,0],
                 scale = 1.0,
                 translateTo = '',
@@ -38,17 +38,27 @@ class Control():
 
         #control and offset group
        
-        ctrlOffset = mc.group( n = '%s_grp' %prefix, em = 1 ) 
-        ctrlObject = prefix + suffix
+        self.off = mc.group( n = '%sBuf1_grp' %prefix, em = 1 ) 
+        self.c = prefix + suffix
+
+        self.tx, self.ty, self.tz = self.c + '.tx', self.c + '.tz', self.c + '.tz'
+        self.rx, self.ry, self.rz = self.c + '.rx', self.c + '.rz', self.c + '.rz'
+        self.sx, self.sy, self.sz = self.c + '.sx', self.c + '.sz', self.c + '.sz'
+        self.t = [ self.tx, self.ty, self.tz ]
+        self.r = [ self.rx, self.ry, self.rz ]
+        self.s = [ self.sx, self.sy, self.sz ]
+        self.v = self.c + '.v'
+
+        
         curve = createCurve( curveShape )
-        mc.rename( curve, ctrlObject ) 
-        self._rotateCurveShape( ctrlObject, scale, rotateShape ) 
-        mc.rename( ctrlObject, prefix + suffix )
-        mc.parent( ctrlObject, ctrlOffset )
+        mc.rename( curve, self.c ) 
+        self._rotateCurveShape( self.c, scale, rotateShape ) 
+        mc.rename( self.c, prefix + suffix )
+        mc.parent( self.c, self.off )
         
         #color based on naming convention
         
-        ctrlShapes = mc.listRelatives( ctrlObject, s = 1, type = 'nurbsCurve' ) #returns name instead of list
+        ctrlShapes = mc.listRelatives( self.c, s = 1, type = 'nurbsCurve' ) #returns name instead of list
         
         for s in ctrlShapes:
 
@@ -72,21 +82,21 @@ class Control():
 
                 mc.setAttr( '%s.ovc' %s, colorIdx )
         
-        #match translation and rotation of ctrlOffset
+        #match translation and rotation of self.off
         
         if mc.objExists( translateTo ):
             
-            mc.delete( mc.pointConstraint( translateTo, ctrlOffset ) )
+            mc.delete( mc.pointConstraint( translateTo, self.off ) )
         
         if( mc.objExists( rotateTo ) ):
             
-            mc.delete( mc.orientConstraint( rotateTo, ctrlOffset ) )
+            mc.delete( mc.orientConstraint( rotateTo, self.off ) )
        
-        #parent ctrlOffset
+        #parent self.off
         
         if mc.objExists( parent ):
         
-            mc.parent( ctrlOffset, parent )
+            mc.parent( self.off, parent )
         
         # lock controls
         
@@ -109,16 +119,11 @@ class Control():
         
         for at in singleAttributeLockList:
 
-            mc.setAttr( '%s.%s'%(ctrlObject,at) , l = 1, k = 0 )
+            mc.setAttr( '%s.%s'%(self.c,at) , l = 1, k = 0 )
 
-        # add public membership
+    def _rotateCurveShape(self, controlObject, scale, rotateShape):
 
-        self.c = ctrlObject
-        self.off = ctrlOffset
-
-    def _rotateCurveShape(self, ctrlObject, scale, rotateShape):
-
-        ctlShapes = mc.listRelatives( ctrlObject, s = 1, type = 'nurbsCurve' ) 
+        ctlShapes = mc.listRelatives( controlObject, s = 1, type = 'nurbsCurve' ) 
         
         for s in ctlShapes:
             
